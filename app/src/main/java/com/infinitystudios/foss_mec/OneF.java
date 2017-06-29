@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.provider.CalendarContract;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -29,30 +30,16 @@ import java.util.Date;
 public class OneF extends Fragment {
 
     private ListView listView;
-    private Event event;
-    private ArrayList<Event> events;
-    private DBHandler dbHandler;
+    private EventsAdapter adapter;
 
     private View rootView;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_one, container, false);
+
         listView = (ListView) rootView.findViewById(R.id.activities_list);
-        dbHandler = new DBHandler(getContext(), null, null, 1);
-        // db query events
-        String dbString = dbHandler.databaseToString("A");
-        events = new ArrayList<Event>(); // Array list of events
-        if (dbString != "") {
-            String[] t = dbString.split(";");
-            for (int i = 0; i < t.length; i++) {
-                String[] u = t[i].split(",");
-                event = new Event(Integer.parseInt(u[0]), u[1], u[2], u[3], u[4]);
-                events.add(event);
-            }
-        }
 
-
-        final EventsAdapter adapter = new EventsAdapter(getContext(), R.layout.event_layout, events);
+        adapter = new EventsAdapter(getContext(), R.layout.event_layout, Event.getEventsFromDB(getContext(), "A"));
         listView.setAdapter(adapter);
 
         return rootView;

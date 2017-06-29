@@ -36,7 +36,7 @@ public class DownloadJsonTask extends AsyncTask<String, Void, String>{
     @Override
     protected void onPostExecute(String result) {
         // remove unnecessary parts from the response and construct a JSON
-        Log.v("result", result);
+        // Log.v("result", result);
         if (result != "Unable to get Json response.") {
             int start = result.indexOf("{", result.indexOf("{") + 1);
             int end = result.lastIndexOf("}");
@@ -55,6 +55,7 @@ public class DownloadJsonTask extends AsyncTask<String, Void, String>{
         else {
             // unable to get json response
         }
+
     }
 
     private String downloadUrl(String urlString) throws IOException {

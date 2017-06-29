@@ -21,6 +21,8 @@ public class DBHandler extends SQLiteOpenHelper {
     private static final String COLUMN_DESCRIPTION = "description";
     private static final String COLUMN_IMAGEURL = "imageurl";
     private static final String COLUMN_TYPE = "type";
+    private static final String COLUMN_STATUS = "status";
+
 
     public DBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
         super(context, DATABASE_NAME, factory, DATABASE_VERSION);
@@ -33,7 +35,9 @@ public class DBHandler extends SQLiteOpenHelper {
                 COLUMN_TITLE + " TEXT, " +
                 COLUMN_DESCRIPTION + " TEXT, " +
                 COLUMN_IMAGEURL + " TEXT, " +
-                COLUMN_TYPE + " TEXT);";
+                COLUMN_TYPE + " TEXT, " +
+                COLUMN_STATUS + " INTEGER);";
+
         db.execSQL(query);
     }
 
@@ -51,6 +55,7 @@ public class DBHandler extends SQLiteOpenHelper {
         values.put(COLUMN_DESCRIPTION, event.getDescription());
         values.put(COLUMN_IMAGEURL, event.getImageURL());
         values.put(COLUMN_TYPE, event.getType());
+        values.put(COLUMN_STATUS, event.getStatus());
         SQLiteDatabase db = getWritableDatabase();
         db.insert(TABLE_EVENTS, null, values);
         db.close();
@@ -64,6 +69,7 @@ public class DBHandler extends SQLiteOpenHelper {
         values.put(COLUMN_DESCRIPTION, event.getDescription());
         values.put(COLUMN_IMAGEURL, event.getImageURL());
         values.put(COLUMN_TYPE, event.getType());
+        values.put(COLUMN_STATUS, event.getStatus());
         SQLiteDatabase db = getWritableDatabase();
         db.update(TABLE_EVENTS, values, COLUMN_ID+"="+event.get_id(), null);
         db.close();
@@ -72,15 +78,16 @@ public class DBHandler extends SQLiteOpenHelper {
     // Delete task from DB
     public void deleteTask(int id) {
         SQLiteDatabase db = getWritableDatabase();
-        db.execSQL("DELETE FROM "+TABLE_EVENTS+" WHERE "+COLUMN_ID+"="+id);
-        Log.v("Deleted task with id", String.valueOf(id));
+        db.execSQL("DELETE FROM "+TABLE_EVENTS+" WHERE "+COLUMN_ID+"="+id+";");
+        // Log.v("Deleted task with id", String.valueOf(id));
+        db.close();
     }
 
     // Print DB as string
     public String databaseToString(String type){
         String dbString = "";
         SQLiteDatabase db = getWritableDatabase();
-        String query = "SELECT * FROM " + TABLE_EVENTS + " WHERE "+ COLUMN_TYPE +"=\""+type+"\";";
+        String query = "SELECT * FROM " + TABLE_EVENTS + " WHERE "+ COLUMN_TYPE +"=\""+type+"\" ORDER BY "+COLUMN_ID+" DESC;";
 
         // Cursor point to a location in your results
         Cursor c = db.rawQuery(query, null);
@@ -93,11 +100,13 @@ public class DBHandler extends SQLiteOpenHelper {
                 dbString+=c.getString(c.getColumnIndex(COLUMN_DESCRIPTION))+",";
                 dbString+=c.getString(c.getColumnIndex(COLUMN_IMAGEURL))+",";
                 dbString+=c.getString(c.getColumnIndex(COLUMN_TYPE))+",";
+                dbString+=c.getString(c.getColumnIndex(COLUMN_STATUS))+",";
                 dbString+=";";
                 c.moveToNext();
             }
 
         }
+        c.close();
         db.close();
         return dbString;
     }
@@ -107,6 +116,18 @@ public class DBHandler extends SQLiteOpenHelper {
         String query = "SELECT MAX("+COLUMN_ID+") FROM " + TABLE_EVENTS +";";
         Cursor c = db.rawQuery(query, null);
         c.moveToFirst();
-        return  c.getString(0);
+        query = c.getString(0);
+        c.close();
+        db.close();
+        return query;
+    }
+
+    boolean idExists(int id) {
+        SQLiteDatabase db = getWritableDatabase();
+        String query = "SELECT * FROM " + TABLE_EVENTS +" WHERE "+COLUMN_ID+"="+id+";";
+        Cursor c = db.rawQuery(query, null);
+        if (c.moveToFirst())
+            return true;
+        return false;
     }
 }

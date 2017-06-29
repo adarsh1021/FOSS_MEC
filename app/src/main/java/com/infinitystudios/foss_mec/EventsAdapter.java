@@ -33,12 +33,13 @@ public class EventsAdapter extends ArrayAdapter<Event> {
         if (e!=null) {
             TextView tvTitle = (TextView) v.findViewById(R.id.tvEventTitle);
             TextView tvDescription = (TextView) v.findViewById(R.id.tvEventDescription);
+            TextView tvId = (TextView) v.findViewById(R.id.tvId);
 
+            tvId.setText(String.valueOf(e.getStatus()));
             tvTitle.setText(String.valueOf(e.getTitle()));
             tvDescription.setText(String.valueOf(e.getDescription()));
         }
         return v;
     }
-
 
 }
