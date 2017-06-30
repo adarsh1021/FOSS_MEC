@@ -1,11 +1,15 @@
 package com.infinitystudios.foss_mec;
 
+import android.app.AlarmManager;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -26,16 +30,24 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
 
 
+    private PendingIntent pendingIntent;
+    private AlarmManager manager;
     public static MenuItem menuItem;
-    // private Integer last_id;
     private DBHandler dbHandler;
     private PagerAdapter pagerAdapter;
-    private int id, status;
+    private int id, status, last_id;
     private String title, description, imgUrl, type;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // retrieve pending intent that will perform a broadcast
+        Intent alarmIntent = new Intent(this, AlarmReceiver.class);
+        pendingIntent = PendingIntent.getBroadcast(this,0,alarmIntent,PendingIntent.FLAG_UPDATE_CURRENT);
+        manager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+        manager.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis()+1000, 60000, pendingIntent);
+
         // tabbed activity display code
         setContentView(R.layout.activity_main);
 
@@ -70,13 +82,21 @@ public class MainActivity extends AppCompatActivity {
         });
 
         dbHandler = new DBHandler(this, null, null, 1);
-        /*try {
+        try {
             last_id = Integer.parseInt(dbHandler.getMaxId());
         }
         catch (NumberFormatException e) {
             last_id = 0;
         }
-        last_id=0;*/
+
+        new DownloadJsonTask(new AsyncResult() {
+            @Override
+            public void onResult(JSONObject object) {
+                processJson(object);
+            }
+        }).execute("https://spreadsheets.google.com/tq?key=1rKzPTY-3_bUQzEfXPmpKRQfskLXeNOja1WDEDYoExfE");
+        // https://spreadsheets.google.com/tq?tq=SELECT%20*%20WHERE%20A>"+String.valueOf(last_id)+"&key=1rKzPTY-3_bUQzEfXPmpKRQfskLXeNOja1WDEDYoExfE
+
     }
 
     public boolean onCreateOptionsMenu(Menu menu){
@@ -143,6 +163,21 @@ public class MainActivity extends AppCompatActivity {
 
                 if (dbHandler.idExists(id) && status == 2) dbHandler.deleteTask(id);
 
+                if (dbHandler.idExists(id)) {
+                    Event event = new Event(id, title, description, imgUrl, type, status);
+                    dbHandler.updateTask(event);
+                }
+                
+                if (id > last_id) {
+                    id = last_id;
+                    NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getBaseContext());
+                    mBuilder.setSmallIcon(R.mipmap.logo);
+                    mBuilder.setContentTitle("FOSS MEC");
+                    mBuilder.setContentText(title);
+                    mBuilder.setPriority(NotificationCompat.PRIORITY_HIGH);
+                    NotificationManager mNotificationManager = (NotificationManager) getBaseContext().getSystemService(Context.NOTIFICATION_SERVICE);
+                    mNotificationManager.notify(r,mBuilder.build());
+                }
 
                 /*
                 if (status == 1 && id > last_id) { // if event is active and new
@@ -181,8 +216,13 @@ public class MainActivity extends AppCompatActivity {
                 .detach(f2)
                 .attach(f2)
                 .commit();
-        menuItem.collapseActionView();
-        menuItem.setActionView(null);
+        try {
+            menuItem.collapseActionView();
+            menuItem.setActionView(null);
+        } catch (NullPointerException e) {
+
+        }
+
     }
 
 }

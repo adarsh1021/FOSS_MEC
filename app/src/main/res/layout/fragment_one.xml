@@ -3,23 +3,6 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <LinearLayout
-        android:id="@+id/llProgressBar"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:visibility="gone" >
-
-        <ProgressBar
-            android:id="@+id/pbLoading"
-            style="@style/Widget.AppCompat.ProgressBar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-        </ProgressBar>
-
-    </LinearLayout>
-
 
 <ListView
     android:id="@+id/activities_list"
@@ -27,7 +10,9 @@
     android:layout_height="match_parent"
     android:layout_marginLeft="10dp"
     android:layout_marginRight="10dp"
-    android:layout_marginTop="20dp">
+    android:layout_marginTop="20dp"
+    android:divider="@android:color/transparent"
+    android:dividerHeight="10dp">
 
 </ListView>
 </LinearLayout>
