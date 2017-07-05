@@ -30,7 +30,7 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
 
 
-    private PendingIntent pendingIntent;
+    private PendingIntent pendingIntent, notifPendingIntent;
     private AlarmManager manager;
     public static MenuItem menuItem;
     private DBHandler dbHandler;
@@ -47,6 +47,9 @@ public class MainActivity extends AppCompatActivity {
         pendingIntent = PendingIntent.getBroadcast(this,0,alarmIntent,PendingIntent.FLAG_UPDATE_CURRENT);
         manager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
         manager.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis()+1000, 60000, pendingIntent);
+
+        Intent notifIntent = new Intent(this, MainActivity.class);
+        notifPendingIntent = PendingIntent.getActivity(this, 0, notifIntent, Intent.FILL_IN_ACTION);
 
         // tabbed activity display code
         setContentView(R.layout.activity_main);
@@ -175,6 +178,7 @@ public class MainActivity extends AppCompatActivity {
                     mBuilder.setContentTitle("FOSS MEC");
                     mBuilder.setContentText(title);
                     mBuilder.setPriority(NotificationCompat.PRIORITY_HIGH);
+                    mBuilder.setContentIntent(notifPendingIntent);
                     NotificationManager mNotificationManager = (NotificationManager) getBaseContext().getSystemService(Context.NOTIFICATION_SERVICE);
                     mNotificationManager.notify(r,mBuilder.build());
                 }
